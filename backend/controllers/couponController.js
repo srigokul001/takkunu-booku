@@ -5,7 +5,8 @@ const Coupon = require('../models/Coupon');
 // @access  Public
 const applyCoupon = async (req, res, next) => {
   try {
-    const { code, subtotal } = req.body;
+    const { code, subtotal, totalAmount } = req.body;
+    const effectiveSubtotal = subtotal !== undefined ? subtotal : totalAmount;
 
     if (!code || code.trim() === '') {
       return res.status(400).json({
@@ -14,7 +15,7 @@ const applyCoupon = async (req, res, next) => {
       });
     }
 
-    if (!subtotal || Number(subtotal) <= 0) {
+    if (!effectiveSubtotal || Number(effectiveSubtotal) <= 0) {
       return res.status(400).json({
         success: false,
         message: 'Invalid booking subtotal amount.',
@@ -38,7 +39,7 @@ const applyCoupon = async (req, res, next) => {
       });
     }
 
-    if (coupon.minBookingAmount && Number(subtotal) < coupon.minBookingAmount) {
+    if (coupon.minBookingAmount && Number(effectiveSubtotal) < coupon.minBookingAmount) {
       return res.status(400).json({
         success: false,
         message: `This coupon requires a minimum booking amount of $${coupon.minBookingAmount}.`,
@@ -48,22 +49,24 @@ const applyCoupon = async (req, res, next) => {
     // Calculate discount
     let discountAmount = 0;
     if (coupon.discountType === 'percentage') {
-      discountAmount = Math.round((Number(subtotal) * coupon.discountValue) / 100);
+      discountAmount = Math.round((Number(effectiveSubtotal) * coupon.discountValue) / 100);
     } else {
-      discountAmount = Math.min(Number(subtotal), coupon.discountValue);
+      discountAmount = Math.min(Number(effectiveSubtotal), coupon.discountValue);
     }
 
-    const finalAmount = Math.max(0, Number(subtotal) - discountAmount);
+    const finalAmount = Math.max(0, Number(effectiveSubtotal) - discountAmount);
 
     res.json({
       success: true,
       message: `Coupon "${cleanCode}" applied successfully! You saved $${discountAmount}.`,
+      discountAmount,
+      finalAmount,
       coupon: {
         code: coupon.code,
         discountType: coupon.discountType,
         discountValue: coupon.discountValue,
         discountAmount,
-        subtotal: Number(subtotal),
+        subtotal: Number(effectiveSubtotal),
         finalAmount,
       },
     });

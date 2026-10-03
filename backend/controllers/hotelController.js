@@ -1,16 +1,22 @@
 const Hotel = require('../models/Hotel');
 const Room = require('../models/Room');
 
-// @desc    Get all hotels (with optional search by location/keyword)
+// @desc    Get all hotels (with optional search by location/keyword, filters, and room count)
 // @route   GET /api/hotels
 // @access  Public
 const getHotels = async (req, res, next) => {
   try {
-    const { search, location } = req.query;
+    const { search, location, minRating, amenity } = req.query;
     let query = {};
 
     if (location && location.trim() !== '') {
-      query.location = { $regex: location.trim(), $options: 'i' };
+      const locRegex = { $regex: location.trim(), $options: 'i' };
+      query.$or = [
+        { location: locRegex },
+        { city: locRegex },
+        { state: locRegex },
+        { country: locRegex },
+      ];
     }
 
     if (search && search.trim() !== '') {
@@ -18,17 +24,42 @@ const getHotels = async (req, res, next) => {
       query.$or = [
         { hotelName: searchRegex },
         { location: searchRegex },
+        { city: searchRegex },
+        { state: searchRegex },
+        { country: searchRegex },
         { address: searchRegex },
         { description: searchRegex },
       ];
     }
 
+    if (minRating) {
+      query.rating = { $gte: Number(minRating) };
+    }
+
+    if (amenity && amenity !== 'All') {
+      query.amenities = { $in: [amenity] };
+    }
+
     const rawHotels = await Hotel.find(query).sort({ createdAt: -1 });
+
+    // Aggregate room counts per hotel for fast display
+    const hotelIds = rawHotels.map((h) => h._id);
+    const roomCounts = await Room.aggregate([
+      { $match: { hotelId: { $in: hotelIds } } },
+      { $group: { _id: '$hotelId', count: { $sum: 1 }, availableCount: { $sum: { $cond: [{ $eq: ['$status', 'Available'] }, 1, 0] } } } },
+    ]);
+    const countMap = {};
+    roomCounts.forEach((rc) => {
+      countMap[rc._id.toString()] = { total: rc.count, available: rc.availableCount };
+    });
+
     const hotels = rawHotels.map((h) => {
       const obj = h.toObject();
       if (!obj.images || obj.images.length === 0) {
         obj.images = [{ url: obj.image, publicId: '', isCover: true }];
       }
+      obj.roomCount = countMap[obj._id.toString()]?.total || 0;
+      obj.availableRoomCount = countMap[obj._id.toString()]?.available || 0;
       return obj;
     });
 
@@ -86,23 +117,43 @@ const getHotelById = async (req, res, next) => {
 // @access  Private/Admin
 const createHotel = async (req, res, next) => {
   try {
-    const { hotelName, location, address, description, image, images, rating, contactPhone, amenities } = req.body;
+    const {
+      hotelName,
+      location,
+      city,
+      state,
+      country,
+      address,
+      description,
+      image,
+      images,
+      rating,
+      contactPhone,
+      contactEmail,
+      amenities,
+      coordinates,
+    } = req.body;
 
     const coverUrl = Array.isArray(images) && images.length > 0 
       ? (images.find((img) => img.isCover)?.url || images[0]?.url) 
       : null;
     const finalImage = image || coverUrl;
 
-    if (!hotelName || !location || !address || !description || !finalImage) {
+    const effectiveLocation = location || city || 'Miami, FL';
+
+    if (!hotelName || !effectiveLocation || !address || !description || !finalImage) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide hotelName, location, address, description, and at least one hotel photo',
+        message: 'Please provide hotelName, location/city, address, description, and at least one hotel photo',
       });
     }
 
     const hotel = await Hotel.create({
       hotelName,
-      location,
+      location: effectiveLocation,
+      city: city || (effectiveLocation ? effectiveLocation.split(',')[0].trim() : ''),
+      state: state || '',
+      country: country || 'United States',
       address,
       description,
       image: finalImage,
@@ -111,7 +162,9 @@ const createHotel = async (req, res, next) => {
         : [{ url: finalImage, publicId: '', isCover: true }],
       rating: rating ? Number(rating) : 4.5,
       contactPhone,
+      contactEmail: contactEmail || '',
       amenities: Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map((s) => s.trim()) : undefined),
+      coordinates: coordinates && typeof coordinates === 'object' ? coordinates : { lat: 25.7617, lng: -80.1918 },
     });
 
     res.status(201).json({

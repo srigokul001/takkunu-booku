@@ -35,6 +35,14 @@ const performSeed = async (wipe = true) => {
     role: 'Admin',
   });
 
+  await User.create({
+    name: 'TAKKUNU BOOKU Superadmin',
+    email: 'admin@takkunubooku.com',
+    phone: '+1-800-555-0100',
+    password: 'adminpassword123',
+    role: 'Admin',
+  });
+
   const user1 = await User.create({
     name: 'John Anderson',
     email: 'john@example.com',

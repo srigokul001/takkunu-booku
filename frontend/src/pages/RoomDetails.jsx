@@ -8,7 +8,9 @@ import {
   ShieldCheck,
   Building,
   CreditCard,
-  AlertCircle
+  AlertCircle,
+  Bed,
+  Maximize2
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
@@ -153,7 +155,7 @@ const RoomDetails = () => {
             </div>
 
             {/* Room Features */}
-            <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-slate-100">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
                   <Users className="w-5 h-5" />
@@ -170,6 +172,24 @@ const RoomDetails = () => {
                 <div>
                   <p className="text-xs text-slate-400 font-medium">Nightly Rate</p>
                   <p className="text-sm font-bold text-slate-800">${room.pricePerNight} / night</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+                  <Bed className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-medium">Bed Type</p>
+                  <p className="text-sm font-bold text-slate-800">{room.bedType || 'King Bed'}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+                  <Maximize2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-medium">Room Size</p>
+                  <p className="text-sm font-bold text-slate-800">{room.roomSize || '350 sq ft'}</p>
                 </div>
               </div>
             </div>

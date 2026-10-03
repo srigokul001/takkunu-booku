@@ -30,11 +30,17 @@ const ManageHotels = () => {
   const [formData, setFormData] = useState({
     hotelName: '',
     location: '',
+    city: '',
+    state: '',
+    country: 'United States',
     address: '',
     description: '',
     image: '',
     rating: 4.8,
     contactPhone: '',
+    contactEmail: '',
+    lat: 25.7617,
+    lng: -80.1918,
     amenities: 'Free Wi-Fi, Swimming Pool, Ocean View, Restaurant, Spa',
   });
   const [submitting, setSubmitting] = useState(false);
@@ -71,11 +77,17 @@ const ManageHotels = () => {
     setFormData({
       hotelName: '',
       location: '',
+      city: '',
+      state: '',
+      country: 'United States',
       address: '',
       description: '',
       image: '',
       rating: 4.8,
       contactPhone: '+1 (800) 555-0199',
+      contactEmail: 'concierge@hotel.com',
+      lat: 25.7617,
+      lng: -80.1918,
       amenities: 'Free Wi-Fi, Swimming Pool, Ocean View, Restaurant, Spa',
     });
     setModalOpen(true);
@@ -93,12 +105,18 @@ const ManageHotels = () => {
     setUploadError('');
     setFormData({
       hotelName: hotel.hotelName,
-      location: hotel.location,
+      location: hotel.location || '',
+      city: hotel.city || (hotel.location ? hotel.location.split(',')[0].trim() : ''),
+      state: hotel.state || '',
+      country: hotel.country || 'United States',
       address: hotel.address,
       description: hotel.description,
       image: hotel.image || '',
       rating: hotel.rating,
       contactPhone: hotel.contactPhone || '',
+      contactEmail: hotel.contactEmail || '',
+      lat: hotel.coordinates?.lat || 25.7617,
+      lng: hotel.coordinates?.lng || -80.1918,
       amenities: Array.isArray(hotel.amenities) ? hotel.amenities.join(', ') : hotel.amenities,
     });
     setModalOpen(true);
@@ -143,6 +161,12 @@ const ManageHotels = () => {
 
       const payload = {
         ...formData,
+        location: formData.location || formData.city || 'Miami, FL',
+        city: formData.city || (formData.location ? formData.location.split(',')[0].trim() : ''),
+        coordinates: {
+          lat: Number(formData.lat) || 25.7617,
+          lng: Number(formData.lng) || -80.1918,
+        },
         image: coverUrl,
         images: allImages,
       };
@@ -235,8 +259,9 @@ const ManageHotels = () => {
                 <tr>
                   <th className="py-3.5 px-6">Hotel Property</th>
                   <th className="py-3.5 px-6">Location & Address</th>
+                  <th className="py-3.5 px-6">Rooms & Amenities</th>
                   <th className="py-3.5 px-6">Rating</th>
-                  <th className="py-3.5 px-6">Phone</th>
+                  <th className="py-3.5 px-6">Contact</th>
                   <th className="py-3.5 px-6 text-right">Actions</th>
                 </tr>
               </thead>
@@ -260,8 +285,18 @@ const ManageHotels = () => {
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <p className="font-bold text-slate-800">{h.location}</p>
+                      <p className="font-bold text-slate-800">{h.city ? `${h.city}, ${h.state || h.country}` : h.location}</p>
                       <p className="text-[11px] text-slate-400">{h.address}</p>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="space-y-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                          {h.roomCount !== undefined ? `${h.roomCount} Rooms` : 'Rooms active'}
+                        </span>
+                        <p className="text-[10px] text-slate-400 line-clamp-1">
+                          {Array.isArray(h.amenities) ? h.amenities.slice(0, 3).join(', ') : (h.amenities || '')}
+                        </p>
+                      </div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center space-x-1">
@@ -269,8 +304,11 @@ const ManageHotels = () => {
                         <span className="font-bold text-slate-800">{h.rating ? h.rating.toFixed(1) : '4.5'}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-slate-500 font-mono">
-                      {h.contactPhone || 'N/A'}
+                    <td className="py-4 px-6">
+                      <p className="text-slate-700 font-mono text-[11px]">{h.contactPhone || 'N/A'}</p>
+                      {h.contactEmail && (
+                        <p className="text-[10px] text-slate-400 line-clamp-1">{h.contactEmail}</p>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end space-x-2">
@@ -326,30 +364,42 @@ const ManageHotels = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                    City / Location *
+                    City *
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="e.g. Miami, Florida"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value, location: e.target.value })}
+                    placeholder="e.g. Miami"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
                   />
                 </div>
-
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                    Contact Phone
+                    State / Province
                   </label>
                   <input
                     type="text"
-                    value={formData.contactPhone}
-                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                    placeholder="+1 (800) 555-0199"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    placeholder="e.g. Florida"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Country *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    placeholder="e.g. United States"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
                   />
                 </div>
@@ -367,6 +417,62 @@ const ManageHotels = () => {
                   placeholder="e.g. 1420 Ocean Drive, South Beach, Miami, FL 33139"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Contact Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.contactPhone}
+                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                    placeholder="+1 (800) 555-0199"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Contact Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.contactEmail}
+                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                    placeholder="concierge@hotel.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Latitude (OpenStreetMap)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={formData.lat}
+                    onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
+                    placeholder="25.7617"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-medium focus:outline-none focus:border-teal-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Longitude (OpenStreetMap)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={formData.lng}
+                    onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
+                    placeholder="-80.1918"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-medium focus:outline-none focus:border-teal-600"
+                  />
+                </div>
               </div>
 
               {/* Image Upload Component */}

@@ -47,6 +47,26 @@ const hotelSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    contactEmail: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    city: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    state: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    country: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     amenities: {
       type: [String],
       default: ['Free Wi-Fi', 'Swimming Pool', 'Air Conditioning', 'Free Parking', 'Restaurant'],

@@ -34,7 +34,10 @@ const ManageRooms = () => {
   const [formData, setFormData] = useState({
     hotelId: '',
     roomNumber: '',
+    title: '',
     roomType: 'Deluxe',
+    bedType: 'King Bed',
+    roomSize: '350 sq ft',
     pricePerNight: 250,
     capacity: 2,
     amenities: 'King Bed, Free Wi-Fi, Ocean View, Mini Bar, Balcony',
@@ -79,7 +82,10 @@ const ManageRooms = () => {
     setFormData({
       hotelId: hotels[0]?._id || '',
       roomNumber: '',
+      title: '',
       roomType: 'Deluxe',
+      bedType: 'King Bed',
+      roomSize: '350 sq ft',
       pricePerNight: 250,
       capacity: 2,
       amenities: 'King Bed, Free Wi-Fi, Ocean View, Mini Bar, Balcony',
@@ -104,7 +110,10 @@ const ManageRooms = () => {
     setFormData({
       hotelId: typeof room.hotelId === 'object' ? room.hotelId._id : room.hotelId,
       roomNumber: room.roomNumber,
+      title: room.title || '',
       roomType: room.roomType,
+      bedType: room.bedType || 'King Bed',
+      roomSize: room.roomSize || '350 sq ft',
       pricePerNight: room.pricePerNight,
       capacity: room.capacity,
       amenities: Array.isArray(room.amenities) ? room.amenities.join(', ') : room.amenities,
@@ -312,7 +321,7 @@ const ManageRooms = () => {
                         />
                         <div>
                           <p className="font-extrabold text-slate-900 text-sm">Room #{r.roomNumber}</p>
-                          <p className="text-[11px] text-teal-700 font-semibold">{r.roomType}</p>
+                          <p className="text-[11px] text-teal-700 font-semibold">{r.title || `${r.roomType} Suite`}</p>
                         </div>
                       </div>
                     </td>
@@ -321,7 +330,9 @@ const ManageRooms = () => {
                     </td>
                     <td className="py-4 px-6">
                       <p className="font-bold text-slate-800">{r.capacity} Guests</p>
-                      <p className="text-[10px] text-slate-400">{(r.amenities || []).slice(0, 2).join(', ')}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">
+                        {r.bedType || 'King Bed'} • {r.roomSize || '350 sq ft'}
+                      </p>
                     </td>
                     <td className="py-4 px-6 font-black text-slate-900 text-sm">
                       ${r.pricePerNight} <span className="text-[10px] font-normal text-slate-400">/ night</span>
@@ -440,11 +451,54 @@ const ManageRooms = () => {
                   >
                     <option value="Single">Single</option>
                     <option value="Double">Double</option>
+                    <option value="Twin">Twin</option>
                     <option value="Deluxe">Deluxe</option>
                     <option value="Suite">Suite</option>
+                    <option value="Family">Family</option>
                     <option value="Family Suite">Family Suite</option>
                     <option value="Executive Suite">Executive Suite</option>
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Room Title / Label (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g. Deluxe Ocean View King Room"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Bed Configuration
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bedType}
+                    onChange={(e) => setFormData({ ...formData, bedType: e.target.value })}
+                    placeholder="e.g. King Bed, Queen Bed, 2 Twin Beds"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Room Size
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.roomSize}
+                    onChange={(e) => setFormData({ ...formData, roomSize: e.target.value })}
+                    placeholder="e.g. 380 sq ft (35 m²)"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-teal-600"
+                  />
                 </div>
               </div>
 

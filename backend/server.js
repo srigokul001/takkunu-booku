@@ -26,8 +26,9 @@ app.use(express.urlencoded({ extended: true }));
 // Health Check API route
 app.get('/api/health', (req, res) => {
   res.json({
+    success: true,
     status: 'OK',
-    message: 'Hotel Room Booking System API is running smoothly',
+    message: 'TAKKUNU BOOKU Hotel Room Booking System API is running smoothly',
     timestamp: new Date().toISOString(),
   });
 });

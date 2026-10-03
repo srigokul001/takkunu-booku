@@ -62,9 +62,13 @@ const bookingSchema = new mongoose.Schema(
       required: [true, 'Total amount is required'],
       min: [0, 'Amount must be positive'],
     },
+    taxesAmount: {
+      type: Number,
+      default: 0,
+    },
     bookingStatus: {
       type: String,
-      enum: ['Confirmed', 'Checked In', 'Pending', 'Cancelled', 'Completed'],
+      enum: ['Confirmed', 'Checked In', 'Checked-in', 'Pending', 'Cancelled', 'Completed'],
       default: 'Confirmed',
     },
     checkedInAt: {

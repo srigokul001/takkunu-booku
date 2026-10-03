@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 let mongod = null;
 
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hotel_booking';
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/hotel_booking';
 
   try {
     // Attempt connecting to the configured MongoDB URI with a short timeout
