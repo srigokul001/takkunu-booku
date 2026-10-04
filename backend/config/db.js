@@ -19,7 +19,9 @@ const connectDB = async () => {
     try {
       console.log('➜ Starting in-memory MongoDB server for instant zero-config run...');
       const { MongoMemoryServer } = require('mongodb-memory-server');
-      mongod = await MongoMemoryServer.create();
+      mongod = await MongoMemoryServer.create({
+        instance: { startupTimeout: 60000 },
+      });
       const inMemoryUri = mongod.getUri();
 
       const conn = await mongoose.connect(inMemoryUri);

@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+// Base API URL: uses VITE_API_URL or defaults to production Render URL in production
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? 'https://takkunu-booku.onrender.com' : 'http://localhost:5000');
+
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`,
+  baseURL: `${API_URL.replace(/\/+$/, '')}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
